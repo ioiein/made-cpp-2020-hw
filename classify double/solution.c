@@ -27,8 +27,6 @@ bool getBit(const uint64_t number, const uint8_t index) {
 
 bool checkForPlusZero(uint64_t number) {
     /// Your code here.
-    for (int i = 0; i < 64; i++)
-        printf("%u", getBit(number, i));
     return number == 0;
 }
 
