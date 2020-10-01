@@ -68,12 +68,14 @@ namespace task {
 		return c;	
 	}
 	
+	const double ALPHA = 1e-7;
 	template <class T>
 	bool operator|| (const std::vector<T>& a, const std::vector<T>& b)
 	{
-		for (size_t i = 0; i < a.size() - 1; ++i)
+		for (size_t i = 1; i < a.size(); ++i)
 		{
-			if ((double)a[i] / b[i] != (double)a[i + 1] / b[i + 1])
+			if ((double)b[i - 1] / a[i - 1] - (double)b[i] / a[i] > ALPHA || 
+			(double)b[i] / a[i] - (double)b[i - 1] / a[i - 1] > ALPHA)
 			{
 				return false;
 			}
@@ -82,9 +84,9 @@ namespace task {
 	}
 
 	template <class T>
-	bool operator%% (const std::vectro<T>& a, const std::vector<T>& b)
+	bool operator&& (const std::vector<T>& a, const std::vector<T>& b)
 	{
-		return a * b > 0 && a || b;
+		return (a * b > 0) && (a || b);
 	}
 	
 	template <class T>
@@ -101,6 +103,7 @@ namespace task {
 	template <class T>
 	std::istream& operator>> (std::istream& is, std::vector<T>& a)
 	{
+		a.clear();
 		int n;
 		is >> n;
 		T buff;
@@ -109,6 +112,7 @@ namespace task {
 			is >> buff;
 			a.push_back(buff);
 		}
+		return is;
 	}
 
 	template <class T>
