@@ -27,8 +27,8 @@ public:
     void set(size_t row, size_t col, const double& value);
     void resize(size_t new_rows, size_t new_cols);
 
-    /* ??? */ operator[](size_t row);
-    /* ??? */ operator[](size_t row) const;
+    double* operator[](size_t row);
+    double const* operator[](size_t row) const;
 
     Matrix& operator+=(const Matrix& a);
     Matrix& operator-=(const Matrix& a);
@@ -53,9 +53,12 @@ public:
 
     bool operator==(const Matrix& a) const;
     bool operator!=(const Matrix& a) const;
+    
+    size_t rows_count;
+    size_t columns_count;
 
-    // Your code goes here...
-
+private:
+    double** matrix;
 };
 
 
