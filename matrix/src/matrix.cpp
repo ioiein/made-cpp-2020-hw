@@ -54,26 +54,40 @@ Matrix::Matrix(const Matrix& copy)
 		}
 	}
 }
-
-Matrix& Matrix::operator=(const Matrix& a)
+Matrix::~Matrix()
 {
 	for (size_t i = 0; i < rows_count; i++)
 	{
 		delete[] matrix[i];
 	}
 	delete[] matrix;
-	rows_count = a.rows_count;
-	columns_count = a.columns_count;
-	matrix = new double* [rows_count];
-	for (size_t i = 0; i < rows_count; i++)
+}
+
+Matrix& Matrix::operator=(const Matrix& a)
+{
+	if (this != &a)
 	{
-		matrix[i] = new double[columns_count];
-	}
-	for (size_t i = 0; i < rows_count; i++)
-	{
-		for (size_t j = 0; j < columns_count; j++)
+		if (rows_count != a.rows_count || columns_count != a.columns_count)
 		{
-			matrix[i][j] = a.matrix[i][j];
+			for (size_t i = 0; i < rows_count; i++)
+			{
+				delete[] matrix[i];
+			}
+			delete[] matrix;
+			rows_count = a.rows_count;
+			columns_count = a.columns_count;
+			matrix = new double* [rows_count];
+			for (size_t i = 0; i < rows_count; i++)
+			{
+				matrix[i] = new double[columns_count];
+			}
+		}
+		for (size_t i = 0; i < rows_count; i++)
+		{
+			for (size_t j = 0; j < columns_count; j++)
+			{
+				matrix[i][j] = a.matrix[i][j];
+			}
 		}
 	}
 	return *this;
@@ -133,20 +147,23 @@ void Matrix::resize(size_t new_rows, size_t new_cols)
 		}
 	}
 	*this = new_matrix;
-	for (size_t i = 0; i < new_rows; i++)
-	{
-		delete[] new_matrix.matrix[i];
-	}
-	delete[] new_matrix.matrix;
 }
 
 double* Matrix::operator[](size_t row)
 {
-	return &matrix[0][row];
+	if (row >= rows_count || row < 0)
+	{
+		throw OutOfBoundsException();
+	}
+	return matrix[row];
 }
 double const* Matrix::operator[](size_t row) const
 {
-	return &matrix[0][row];
+	if (row >= rows_count || row < 0)
+	{
+		throw OutOfBoundsException();
+	}
+	return matrix[row];
 }
 
 Matrix& Matrix::operator+=(const Matrix& a)
@@ -189,21 +206,18 @@ Matrix& Matrix::operator-=(const Matrix& a)
 
 Matrix& Matrix::operator*=(const Matrix& a)
 {
-	if (a.rows_count != columns_count || a.columns_count != rows_count)
+	if (a.rows_count != columns_count)
 	{
 		throw SizeMismatchException();
 	}
 	else
 	{
-		Matrix new_matrix(rows_count, rows_count);
+		Matrix new_matrix(rows_count, a.columns_count);
 		for (size_t i = 0; i < rows_count; i++)
 		{
-			new_matrix.matrix[i][i] = 0;
-		}
-		for (size_t i = 0; i < rows_count; i++)
-		{
-			for (size_t j = 0; j < rows_count; j++)
+			for (size_t j = 0; j < a.columns_count; j++)
 			{
+				new_matrix.matrix[i][j] = 0;
 				for (size_t s = 0; s < columns_count; s++)
 				{
 					new_matrix.matrix[i][j] += matrix[i][s] * a.matrix[s][j];
@@ -211,11 +225,6 @@ Matrix& Matrix::operator*=(const Matrix& a)
 			}
 		}
 		*this = new_matrix;
-		for (size_t i = 0; i < rows_count; i++)
-		{
-			delete[] new_matrix.matrix[i];
-		}
-		delete[] new_matrix.matrix;
 		return *this;
 	}
 }
@@ -226,7 +235,7 @@ Matrix& Matrix::operator*=(const double& number)
 	{
 		for (size_t j = 0; j < columns_count; j++)
 		{
-			matrix[i][j] *= number;
+			matrix[i][j] = matrix[i][j] * number;
 		}
 	}
 	return *this;
@@ -262,24 +271,21 @@ Matrix Matrix::operator-(const Matrix& a) const
 
 Matrix Matrix::operator*(const Matrix& a) const
 {
-	if (a.rows_count != columns_count || a.columns_count != rows_count)
+	if (a.rows_count != columns_count)
 	{
 		throw SizeMismatchException();
 	}
 	else
 	{
-		Matrix new_matrix(rows_count, rows_count);
+		Matrix new_matrix(rows_count, a.columns_count);
 		for (size_t i = 0; i < rows_count; i++)
 		{
-			new_matrix[i][i] = 0;
-		}
-		for (size_t i = 0; i < rows_count; i++)
-		{
-			for (size_t j = 0; j < rows_count; j++)
+			for (size_t j = 0; j < a.columns_count; j++)
 			{
+				new_matrix.matrix[i][j] = 0;
 				for (size_t s = 0; s < columns_count; s++)
 				{
-					new_matrix[i][j] += matrix[i][s] * a.matrix[s][j];
+					new_matrix.matrix[i][j] += matrix[i][s] * a.matrix[s][j];
 				}
 			}
 		}
@@ -288,12 +294,12 @@ Matrix Matrix::operator*(const Matrix& a) const
 }
 Matrix Matrix::operator*(const double& a) const
 {
-	Matrix new_matrix(*this);
+	Matrix new_matrix(rows_count, columns_count);
 	for (size_t i = 0; i < rows_count; i++)
 	{
 		for (size_t j = 0; j < columns_count; j++)
 		{
-			new_matrix[i][j] *= a;
+			new_matrix.matrix[i][j] = matrix[i][j] * a;
 		}
 	}
 	return new_matrix;
@@ -326,28 +332,40 @@ double Matrix::det() const
 	}
 	else
 	{
-		int n = rows_count;
-		int det = 0;
-		Matrix submatrix(n - 1, n - 1);
-		if (n == 2)
-			return ((matrix[0][0] * matrix[1][1]) - (matrix[1][0] * matrix[0][1]));
-		else {
-			for (int x = 0; x < n; x++) {
-				int subi = 0;
-				for (int i = 1; i < n; i++) {
-					int subj = 0;
-					for (int j = 0; j < n; j++) {
-						if (j == x)
+		double determinant = 0;
+		if (rows_count == 1)
+		{
+			determinant = matrix[0][0];
+		}
+		else if (rows_count == 2)
+		{
+			determinant = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+		}
+		else //разложение по строке
+		{
+			for (size_t s = 0; s < rows_count; s++)
+			{
+				Matrix submatrix(rows_count - 1, rows_count - 1);
+				for (size_t i = 1; i < rows_count; i++)
+				{
+					size_t sub_j = 0;
+					for (size_t j = 0; j < rows_count; j++)
+					{
+						if (j == s)
+						{
 							continue;
-						submatrix.matrix[subi][subj] = matrix[i][j];
-						subj++;
+						}
+						else
+						{
+							submatrix.matrix[i - 1][sub_j] = matrix[i][j];
+							++sub_j;
+						}
 					}
-					subi++;
 				}
-				det = det + (pow(-1, x) * matrix[0][x] * submatrix.det());
+				determinant += std::pow(-1, s) * matrix[0][s] * submatrix.det();
 			}
 		}
-		return det;
+		return determinant;
 	}
 }
 
@@ -362,11 +380,6 @@ void Matrix::transpose()
 		}
 	}
 	*this = new_matrix;
-	for (size_t i = 0; i < columns_count; ++i)
-	{
-		delete[] new_matrix.matrix[i];
-	}
-	delete[] new_matrix.matrix;
 }
 
 Matrix Matrix::transposed() const
@@ -468,10 +481,6 @@ std::istream& task::operator>>(std::istream& input, Matrix& matrix)
 Matrix task::operator*(const double& a, const Matrix& b)
 {
 		Matrix new_matrix(b);
-		for (size_t i = 0; i < b.rows_count; i++)
-		{
-			new_matrix[i][i] = 0;
-		}
 		for (size_t i = 0; i < b.rows_count; i++)
 		{
 			for (size_t j = 0; j < b.columns_count; j++)

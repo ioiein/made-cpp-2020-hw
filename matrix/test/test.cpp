@@ -5,7 +5,6 @@
 #include <sstream>
 #include <cmath>
 #include "src/matrix.h"
-//#include "C:/Users/79998/Documents/cpp_hw/made-cpp-2020-hw/matrix/src/matrix.h"
 
 
 using task::Matrix;

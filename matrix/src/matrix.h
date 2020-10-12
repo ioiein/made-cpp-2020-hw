@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 
 namespace task {
@@ -53,7 +54,7 @@ public:
 
     bool operator==(const Matrix& a) const;
     bool operator!=(const Matrix& a) const;
-    
+    ~Matrix();
     size_t rows_count;
     size_t columns_count;
 
