@@ -34,21 +34,24 @@ class chunk_allocator {
   };
 
   chunck *current;
-  int counter;
+  int *counter;
 
   chunk_allocator() {
     current = nullptr;
-    counter = 0;
+    counter = new int;
+    *counter = 1;
   }
 
   chunk_allocator(const chunk_allocator &a) {
     current = a.current;
-    counter = a.counter + 1;
+    counter = a.counter;
+    ++(*counter);
   }
 
   chunk_allocator &operator=(const chunk_allocator &a) {
     current = a.current;
-    counter = a.counter + 1;
+    counter = a.counter;
+    ++(*counter);
     return *this;
   }
 
@@ -87,8 +90,8 @@ class chunk_allocator {
   void destroy(pointer p) { p->~T(); }
 
   ~chunk_allocator() {
-    --counter;
-    if (counter == 0) {
+    --(*counter);
+    if (*counter == 0) {
       while (current != nullptr) {
         delete[] current->data;
         current = current->previous;
@@ -99,6 +102,9 @@ class chunk_allocator {
 
 int main() {
   chunk_allocator<int> al;
+  chunk_allocator<int> al2;
+  chunk_allocator<int> al3;
+  al3 = al2 = al;
   std::vector<int, decltype(al)> vec;
   for (int i = 0; i < 150; ++i) {
     vec.push_back(i);
