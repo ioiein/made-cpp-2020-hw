@@ -4,10 +4,9 @@
 
 
 int main () {
-    using game = Game<2, 4, 8, 16>;
+    using game = Game<5, 10, 15, 20, 25>;
 
     std::cout << (game::first_player_wins ? "First" : "Second") << " player wins." << std::endl;
-
     if (game::first_player_wins)
         std::cout <<
             "To win, remove " << game::first_move_rocks_count <<

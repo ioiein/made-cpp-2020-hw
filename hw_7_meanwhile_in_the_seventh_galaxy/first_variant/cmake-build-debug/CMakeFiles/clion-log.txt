@@ -1,0 +1,4 @@
+/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /mnt/c/Users/79998/Documents/GitHub/made-cpp-2020-hw/hw_7_meanwhile_in_the_seventh_galaxy/first_variant
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /mnt/c/Users/79998/Documents/GitHub/made-cpp-2020-hw/hw_7_meanwhile_in_the_seventh_galaxy/first_variant/cmake-build-debug

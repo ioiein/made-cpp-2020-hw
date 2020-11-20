@@ -9,6 +9,11 @@ struct Log2 {
 };
 
 template <>
+struct Log2<1> {
+    static constexpr size_t value = 0;
+};
+
+template <>
 struct Log2<0> {
     static constexpr size_t value = 0;
 };
